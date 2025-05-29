@@ -15,9 +15,12 @@ import com.raizlabs.android.dbflow.processor.ClassNames
 import com.raizlabs.android.dbflow.processor.ModelViewValidator
 import com.raizlabs.android.dbflow.processor.ProcessorManager
 import com.raizlabs.android.dbflow.processor.TableValidator
+import com.raizlabs.android.dbflow.processor.definition.column.modelBlock
 import com.raizlabs.android.dbflow.processor.utils.`override fun`
 import com.raizlabs.android.dbflow.processor.utils.annotation
+import com.raizlabs.android.dbflow.processor.utils.statement
 import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
@@ -120,10 +123,51 @@ class DatabaseDefinition(manager: ProcessorManager, element: Element) : BaseDefi
     }
 
     private fun writeConstructor(builder: TypeSpec.Builder) {
-
         builder.constructor(param(ClassNames.DATABASE_HOLDER, "holder")) {
             modifiers(public)
             this@DatabaseDefinition.elementClassName?.let { elementClassName ->
+                for (definition in manager.getTableDefinitions(elementClassName)) {
+                    if (definition.hasGlobalTypeConverters) {
+                        statement("addModelAdapter(new \$T(holder, this), holder)", definition.outputClassName)
+                    } else {
+                        statement("addModelAdapter(new \$T(this), holder)", definition.outputClassName)
+                    }
+                }
+
+                for (definition in manager.getModelViewDefinitions(elementClassName)) {
+                    if (definition.hasGlobalTypeConverters) {
+                        statement("addModelViewAdapter(new \$T(holder, this), holder)", definition.outputClassName)
+                    } else {
+                        statement("addModelViewAdapter(new \$T(this), holder)", definition.outputClassName)
+                    }
+                }
+
+                for (definition in manager.getQueryModelDefinitions(elementClassName)) {
+                    if (definition.hasGlobalTypeConverters) {
+                        statement("addQueryModelAdapter(new \$T(holder, this), holder)", definition.outputClassName)
+                    } else {
+                        statement("addQueryModelAdapter(new \$T(this), holder)", definition.outputClassName)
+                    }
+                }
+
+                val migrationDefinitionMap = manager.getMigrationsForDatabase(elementClassName)
+                migrationDefinitionMap.keys
+                    .sortedByDescending { it }
+                    .forEach { version ->
+                        migrationDefinitionMap[version]
+                            ?.sortedBy { it.priority }
+                            ?.forEach { migrationDefinition ->
+                                statement("addMigration($version, new \$T${migrationDefinition.constructorName})", migrationDefinition.elementClassName)
+                            }
+                    }
+            }
+            this
+        }
+
+        builder.constructor(param(ClassNames.DATABASE_HOLDER, "holder"), param(String::class, "id")) {
+            modifiers(public)
+            this@DatabaseDefinition.elementClassName?.let { elementClassName ->
+                statement("super(id)")
                 for (definition in manager.getTableDefinitions(elementClassName)) {
                     if (definition.hasGlobalTypeConverters) {
                         statement("addModelAdapter(new \$T(holder, this), holder)", definition.outputClassName)
@@ -196,7 +240,14 @@ class DatabaseDefinition(manager: ProcessorManager, element: Element) : BaseDefi
             if (!databaseName.isNullOrBlank()) {
                 `override fun`(String::class, "getDatabaseName") {
                     modifiers(public, final)
-                    `return`(databaseName.S)
+                    beginControlFlow("if (com.raizlabs.android.dbflow.DbFlowDependencyHelper.getDependency() != null " +
+                        "&& com.raizlabs.android.dbflow.DbFlowDependencyHelper.getDependency().isMultipleDatabaseEnabled())")
+                    statement("return ((databaseConfig != null ? databaseConfig.getDatabaseName() " +
+                        ": getAssociatedDatabaseClassFile().getSimpleName()))"
+                    )
+                    nextControlFlow("else")
+                        .statement("return \"SkypeTeams\"")
+                        .endControlFlow()
                 }
             }
             if (inMemory) {

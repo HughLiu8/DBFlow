@@ -4,7 +4,8 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.list.FlowCursorIterator;
 import com.raizlabs.android.dbflow.list.IFlowCursorIterator;
 import com.raizlabs.android.dbflow.structure.InstanceAdapter;
@@ -23,13 +24,16 @@ public class CursorResult<TModel> implements IFlowCursorIterator<TModel> {
 
     @Nullable
     private FlowCursor cursor;
+    @NonNull
+    final private String id;
 
     @SuppressWarnings("unchecked")
-    CursorResult(Class<TModel> modelClass, @Nullable Cursor cursor) {
+    CursorResult(Class<TModel> modelClass, @Nullable Cursor cursor, @NonNull String id) {
+        this.id = id;
         if (cursor != null) {
             this.cursor = FlowCursor.from(cursor);
         }
-        retrievalAdapter = FlowManager.getInstanceAdapter(modelClass);
+        retrievalAdapter = FlowInstanceWrapper.getInstanceAdapter(id, modelClass, "CursorResult");
     }
 
     /**
@@ -71,7 +75,7 @@ public class CursorResult<TModel> implements IFlowCursorIterator<TModel> {
      */
     @NonNull
     public <TCustom> List<TCustom> toCustomList(@NonNull Class<TCustom> customClass) {
-        return cursor != null ? FlowManager.getQueryModelAdapter(customClass)
+        return cursor != null ? FlowInstanceWrapper.getQueryModelAdapter(id, customClass, "toCustomList")
             .getListModelLoader().convertToData(cursor, null) : new ArrayList<TCustom>();
     }
 
@@ -80,7 +84,7 @@ public class CursorResult<TModel> implements IFlowCursorIterator<TModel> {
      */
     @NonNull
     public <TCustom> List<TCustom> toCustomListClose(@NonNull Class<TCustom> customClass) {
-        final List<TCustom> customList = cursor != null ? FlowManager.getQueryModelAdapter(customClass)
+        final List<TCustom> customList = cursor != null ? FlowInstanceWrapper.getQueryModelAdapter(id, customClass, "toCustomListClose")
             .getListModelLoader().load(cursor) : new ArrayList<TCustom>();
         close();
         return customList;
@@ -109,7 +113,7 @@ public class CursorResult<TModel> implements IFlowCursorIterator<TModel> {
      */
     @Nullable
     public <TCustom> TCustom toCustomModel(@NonNull Class<TCustom> customClass) {
-        return cursor != null ? FlowManager.getQueryModelAdapter(customClass)
+        return cursor != null ? FlowInstanceWrapper.getQueryModelAdapter(id, customClass, "toCustomModel")
             .getSingleModelLoader().convertToData(cursor, null) : null;
     }
 
@@ -118,7 +122,7 @@ public class CursorResult<TModel> implements IFlowCursorIterator<TModel> {
      */
     @Nullable
     public <TCustom> TCustom toCustomModelClose(@NonNull Class<TCustom> customClass) {
-        final TCustom customList = cursor != null ? FlowManager.getQueryModelAdapter(customClass)
+        final TCustom customList = cursor != null ? FlowInstanceWrapper.getQueryModelAdapter(id, customClass, "toCustomModelClose")
             .getSingleModelLoader().load(cursor) : null;
         close();
         return customList;

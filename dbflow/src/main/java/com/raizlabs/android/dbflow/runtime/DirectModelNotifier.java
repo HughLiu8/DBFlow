@@ -71,7 +71,7 @@ public class DirectModelNotifier implements ModelNotifier {
     }
 
     @Override
-    public <T> void notifyTableChanged(@NonNull Class<T> table, @NonNull BaseModel.Action action) {
+    public <T> void notifyTableChanged(@NonNull Class<T> table, @NonNull BaseModel.Action action, @NonNull String id) {
         final Set<OnTableChangedListener> listeners = tableChangedListenerMap.get(table);
         if (listeners != null) {
             for (OnTableChangedListener listener : listeners) {

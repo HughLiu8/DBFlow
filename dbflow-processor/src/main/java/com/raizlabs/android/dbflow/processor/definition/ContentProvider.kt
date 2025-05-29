@@ -108,8 +108,8 @@ class DeleteMethod(private val contentProviderDefinition: ContentProviderDefinit
                         code.apply {
                             case(uriDefinition.name.L) {
                                 add(uriDefinition.getSegmentsPreparation())
-                                add("long count = \$T.getDatabase(\$T.class).getWritableDatabase().delete(\$S, ",
-                                    ClassNames.FLOW_MANAGER, contentProviderDefinition.databaseTypeName,
+                                add("long count = \$T.getDatabase(databaseId, \$T.class, \"DeleteMethod\").getWritableDatabase().delete(\$S, ",
+                                    ClassNames.FLOW_INSTANCE_WRAPPER, contentProviderDefinition.databaseTypeName,
                                     it.tableName)
                                 add(uriDefinition.getSelectionAndSelectionArgs())
                                 add(");\n")
@@ -160,8 +160,8 @@ class InsertMethod(private val contentProviderDefinition: ContentProviderDefinit
                     if (uriDefinition.insertEnabled) {
                         code.apply {
                             beginControlFlow("case \$L:", uriDefinition.name)
-                            addStatement("\$T adapter = \$T.getModelAdapter(\$T.getTableClassForName(\$T.class, \$S))",
-                                ClassNames.MODEL_ADAPTER, ClassNames.FLOW_MANAGER, ClassNames.FLOW_MANAGER,
+                            addStatement("\$T adapter = \$T.getModelAdapter(databaseId, \$T.getTableClassForName(databaseId, \$T.class, \$S, \"InsertMethod\"), \"InsertMethod\")",
+                                ClassNames.MODEL_ADAPTER, ClassNames.FLOW_INSTANCE_WRAPPER, ClassNames.FLOW_INSTANCE_WRAPPER,
                                 contentProviderDefinition.databaseTypeName, it.tableName)
 
                             add("final long id = FlowManager.getDatabase(\$T.class).getWritableDatabase()",
@@ -272,8 +272,8 @@ class QueryMethod(private val contentProviderDefinition: ContentProviderDefiniti
                         method.apply {
                             beginControlFlow("case \$L:", uriDefinition.name)
                             addCode(uriDefinition.getSegmentsPreparation())
-                            addCode("cursor = \$T.getDatabase(\$T.class).getWritableDatabase().query(\$S, projection, ",
-                                ClassNames.FLOW_MANAGER, contentProviderDefinition.databaseTypeName,
+                            addCode("cursor = \$T.getDatabase(databaseId, \$T.class, \"QueryMethod\").getWritableDatabase().query(\$S, projection, ",
+                                ClassNames.FLOW_INSTANCE_WRAPPER, contentProviderDefinition.databaseTypeName,
                                 tableEndpointDefinition.tableName)
                             addCode(uriDefinition.getSelectionAndSelectionArgs())
                             addCode(", null, null, sortOrder);\n")
@@ -317,14 +317,14 @@ class UpdateMethod(private val contentProviderDefinition: ContentProviderDefinit
                     if (uriDefinition.updateEnabled) {
                         method.apply {
                             beginControlFlow("case \$L:", uriDefinition.name)
-                            addStatement("\$T adapter = \$T.getModelAdapter(\$T.getTableClassForName(\$T.class, \$S))",
-                                ClassNames.MODEL_ADAPTER, ClassNames.FLOW_MANAGER, ClassNames.FLOW_MANAGER,
+                            addStatement("\$T adapter = \$T.getModelAdapter(databaseId, \$T.getTableClassForName(databaseId, \$T.class, \$S, \"UpdateMethod\"), \"UpdateMethod\")",
+                                ClassNames.MODEL_ADAPTER, ClassNames.FLOW_INSTANCE_WRAPPER, ClassNames.FLOW_INSTANCE_WRAPPER,
                                 contentProviderDefinition.databaseTypeName,
                                 tableEndpointDefinition.tableName)
                             addCode(uriDefinition.getSegmentsPreparation())
                             addCode(
-                                "long count = \$T.getDatabase(\$T.class).getWritableDatabase().updateWithOnConflict(\$S, \$L, ",
-                                ClassNames.FLOW_MANAGER, contentProviderDefinition.databaseTypeName,
+                                "long count = \$T.getDatabase(databaseId, \$T.class, \"UpdateMethod\").getWritableDatabase().updateWithOnConflict(\$S, \$L, ",
+                                ClassNames.FLOW_INSTANCE_WRAPPER, contentProviderDefinition.databaseTypeName,
                                 tableEndpointDefinition.tableName,
                                 Constants.PARAM_CONTENT_VALUES)
                             addCode(uriDefinition.getSelectionAndSelectionArgs())
@@ -447,7 +447,7 @@ class ContentProviderDefinition(typeElement: Element, processorManager: Processo
 
             `override fun`(String::class, "getDatabaseName") {
                 modifiers(public, final)
-                `return`("\$T.getDatabaseName(\$T.class)", ClassNames.FLOW_MANAGER, databaseTypeName)
+                `return`("\$T.getDatabaseName(databaseId, \$T.class, \"onWriteDefinition\")", ClassNames.FLOW_INSTANCE_WRAPPER, databaseTypeName)
             }
 
             `override fun`(String::class, "getType", param(ClassNames.URI, "uri")) {

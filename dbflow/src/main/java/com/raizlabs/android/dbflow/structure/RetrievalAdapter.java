@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 
 import com.raizlabs.android.dbflow.config.DatabaseConfig;
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
-import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.TableConfig;
 import com.raizlabs.android.dbflow.sql.language.OperatorGroup;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
@@ -27,8 +27,11 @@ public abstract class RetrievalAdapter<TModel> {
 
     private TableConfig<TModel> tableConfig;
 
+    protected String databaseId;
+
     public RetrievalAdapter(@NonNull DatabaseDefinition databaseDefinition) {
-        DatabaseConfig databaseConfig = FlowManager.getConfig()
+        databaseId = databaseDefinition.getId();
+        DatabaseConfig databaseConfig = FlowInstanceWrapper.getConfig(databaseId, "RetrievalAdapter")
             .getConfigForDatabase(databaseDefinition.getAssociatedDatabaseClassFile());
         if (databaseConfig != null) {
             tableConfig = databaseConfig.getTableConfigForTable(getModelClass());
@@ -44,11 +47,15 @@ public abstract class RetrievalAdapter<TModel> {
         }
     }
 
+    public String getDatabaseId() {
+        return databaseId;
+    }
+
     /**
      * Force loads the model from the DB. Even if caching is enabled it will requery the object.
      */
     public void load(@NonNull TModel model) {
-        load(model, FlowManager.getDatabaseForTable(getModelClass()).getWritableDatabase());
+        load(model, FlowInstanceWrapper.getDatabaseForTable(databaseId, getModelClass(), "RetrievalAdapter_load").getWritableDatabase());
     }
 
     /**
@@ -57,7 +64,7 @@ public abstract class RetrievalAdapter<TModel> {
     public void load(@NonNull TModel model, DatabaseWrapper databaseWrapper) {
         getNonCacheableSingleModelLoader().load(databaseWrapper,
             SQLite.select()
-                .from(getModelClass())
+                .from(getModelClass(), databaseId)
                 .where(getPrimaryConditionClause(model)).getQuery(),
             model);
     }
@@ -74,8 +81,8 @@ public abstract class RetrievalAdapter<TModel> {
      * @param model The model to query values from
      * @return True if it exists as a row in the corresponding database table
      */
-    public boolean exists(@NonNull TModel model) {
-        return exists(model, FlowManager.getDatabaseForTable(getModelClass()).getWritableDatabase());
+    public boolean existsWithId(@NonNull TModel model, @Nullable String id) {
+        return exists(model, FlowInstanceWrapper.getDatabaseForTable(id, getModelClass(), "RetrievalAdapter_exists").getWritableDatabase());
     }
 
     /**
@@ -118,7 +125,7 @@ public abstract class RetrievalAdapter<TModel> {
      */
     @NonNull
     protected ListModelLoader<TModel> createListModelLoader() {
-        return new ListModelLoader<>(getModelClass());
+        return new ListModelLoader<>(getModelClass(), databaseId);
     }
 
     /**
@@ -126,7 +133,7 @@ public abstract class RetrievalAdapter<TModel> {
      */
     @NonNull
     protected SingleModelLoader<TModel> createSingleModelLoader() {
-        return new SingleModelLoader<>(getModelClass());
+        return new SingleModelLoader<>(getModelClass(), databaseId);
     }
 
     @NonNull
@@ -143,7 +150,7 @@ public abstract class RetrievalAdapter<TModel> {
      */
     @NonNull
     public SingleModelLoader<TModel> getNonCacheableSingleModelLoader() {
-        return new SingleModelLoader<>(getModelClass());
+        return new SingleModelLoader<>(getModelClass(), databaseId);
     }
 
     /**
@@ -152,7 +159,7 @@ public abstract class RetrievalAdapter<TModel> {
      */
     @NonNull
     public ListModelLoader<TModel> getNonCacheableListModelLoader() {
-        return new ListModelLoader<>(getModelClass());
+        return new ListModelLoader<>(getModelClass(), databaseId);
     }
 
     /**

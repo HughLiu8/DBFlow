@@ -3,7 +3,9 @@ package com.raizlabs.android.dbflow.sql.saveable;
 import android.content.ContentValues;
 import androidx.annotation.NonNull;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
 import com.raizlabs.android.dbflow.annotation.ConflictAction;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.runtime.NotifyDistributor;
 import com.raizlabs.android.dbflow.structure.BaseModel;
@@ -166,7 +168,8 @@ public class ModelSaver<TModel> {
 
     @NonNull
     protected DatabaseWrapper getWritableDatabase() {
-        return FlowManager.getDatabaseForTable(modelAdapter.getModelClass()).getWritableDatabase();
+        final String id = modelAdapter.getDatabaseId();
+        return FlowInstanceWrapper.getDatabaseForTable(id, modelAdapter.getModelClass(), "ModelSaver_getWritableDatabase").getWritableDatabase();
     }
 
     @NonNull

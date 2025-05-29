@@ -27,12 +27,12 @@ public class IndexProperty<T> {
         index.enable(wrapper);
     }
 
-    public void createIfNotExists() {
-        index.enable();
+    public void createIfNotExists(final String id) {
+        index.enable(id);
     }
 
-    public void drop() {
-        index.disable();
+    public void drop(final String id) {
+        index.disable(id);
     }
 
     public void drop(DatabaseWrapper writableDatabase) {

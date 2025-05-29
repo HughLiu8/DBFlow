@@ -2,6 +2,7 @@ package com.raizlabs.android.dbflow.sql.language;
 
 import androidx.annotation.NonNull;
 
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.Query;
 import com.raizlabs.android.dbflow.sql.QueryBuilder;
@@ -141,12 +142,12 @@ public class Index<TModel> implements Query {
         databaseWrapper.execSQL(getQuery());
     }
 
-    public void enable() {
-        enable(FlowManager.getDatabaseForTable(table).getWritableDatabase());
+    public void enable(final String id) {
+        enable(FlowInstanceWrapper.getDatabaseForTable(id, table, "enable").getWritableDatabase());
     }
 
-    public void disable() {
-        SqlUtils.dropIndex(FlowManager.getDatabaseForTable(table).getWritableDatabase(), indexName);
+    public void disable(final String id) {
+        SqlUtils.dropIndex(FlowInstanceWrapper.getDatabaseForTable(id, table, "disable").getWritableDatabase(), indexName);
     }
 
     public void disable(DatabaseWrapper databaseWrapper) {

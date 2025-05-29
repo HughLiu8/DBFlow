@@ -2,6 +2,7 @@ package com.raizlabs.android.dbflow.sql.language;
 
 import androidx.annotation.NonNull;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
 import com.raizlabs.android.dbflow.sql.language.property.IProperty;
 import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 import com.raizlabs.android.dbflow.structure.database.FlowCursor;
@@ -23,9 +24,20 @@ public abstract class BaseTransformable<TModel> extends BaseModelQueriable<TMode
         super(table);
     }
 
+    protected BaseTransformable(Class<TModel> table, @NonNull String id) {
+        super(table, id);
+    }
+
     @NonNull
     public Where<TModel> where(@NonNull SQLOperator... conditions) {
-        return new Where<>(this, conditions);
+        return new Where<>(id, this, conditions);
+    }
+
+    @NonNull
+    public Where<TModel> where(String id, @NonNull SQLOperator... conditions) {
+        DbFlowDependencyHelper.checkIdWithWarning(id, "BaseTransformable_where");
+        this.id = id;
+        return new Where<>(id, this, conditions);
     }
 
     @Override

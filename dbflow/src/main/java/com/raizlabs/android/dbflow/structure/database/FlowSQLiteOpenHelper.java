@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
-import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 
 /**
  * Description: Wraps around the {@link SQLiteOpenHelper} and provides extra features for use in this library.
@@ -20,13 +20,14 @@ public class FlowSQLiteOpenHelper extends SQLiteOpenHelper implements OpenHelper
 
     public FlowSQLiteOpenHelper(@NonNull DatabaseDefinition databaseDefinition,
                                 @NonNull DatabaseHelperListener listener) {
-        super(FlowManager.getContext(), databaseDefinition.isInMemory() ? null : databaseDefinition.getDatabaseFileName(),
+        super(FlowInstanceWrapper.getContext(databaseDefinition.getId(), "FlowSQLiteOpenHelper"),
+                databaseDefinition.isInMemory() ? null : databaseDefinition.getDatabaseFileName(),
             null, databaseDefinition.getDatabaseVersion());
 
         OpenHelper backupHelper = null;
         if (databaseDefinition.backupEnabled()) {
             // Temp database mirrors existing
-            backupHelper = new BackupHelper(FlowManager.getContext(),
+            backupHelper = new BackupHelper(FlowInstanceWrapper.getContext(databaseDefinition.getId(), "FlowSQLiteOpenHelper"),
                 DatabaseHelperDelegate.getTempDbFileName(databaseDefinition),
                 databaseDefinition.getDatabaseVersion(), databaseDefinition);
         }

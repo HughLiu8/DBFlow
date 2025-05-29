@@ -4,6 +4,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
 import com.raizlabs.android.dbflow.annotation.Database;
 import com.raizlabs.android.dbflow.annotation.QueryModel;
 import com.raizlabs.android.dbflow.annotation.Table;
@@ -62,18 +63,32 @@ public abstract class DatabaseDefinition {
      * Used when resetting the DB
      */
     private boolean isResetting = false;
+    protected String id;
 
     @NonNull
     private BaseTransactionManager transactionManager;
 
     @Nullable
-    private DatabaseConfig databaseConfig;
+    protected DatabaseConfig databaseConfig;
 
     @Nullable
     private ModelNotifier modelNotifier;
 
     public DatabaseDefinition() {
         applyDatabaseConfig(FlowManager.getConfig().databaseConfigMap().get(getAssociatedDatabaseClassFile()));
+    }
+
+    public DatabaseDefinition(final String id) {
+        this.id = id;
+        applyDatabaseConfig(FlowInstanceWrapper.getConfig(id, "DatabaseDefinition").databaseConfigMap().get(getAssociatedDatabaseClassFile()));
+    }
+
+    public void setId(@NonNull String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
     }
 
     /**
@@ -240,7 +255,7 @@ public abstract class DatabaseDefinition {
     @NonNull
     public synchronized OpenHelper getHelper() {
         if (openHelper == null) {
-            DatabaseConfig config = FlowManager.getConfig().databaseConfigMap()
+            DatabaseConfig config = FlowInstanceWrapper.getConfig(id, "getHelper").databaseConfigMap()
                     .get(getAssociatedDatabaseClassFile());
             if (config == null || config.helperCreator() == null) {
                 openHelper = new FlowSQLiteOpenHelper(this, helperListener);
@@ -260,10 +275,10 @@ public abstract class DatabaseDefinition {
     @NonNull
     public ModelNotifier getModelNotifier() {
         if (modelNotifier == null) {
-            DatabaseConfig config = FlowManager.getConfig().databaseConfigMap()
+            DatabaseConfig config = FlowInstanceWrapper.getConfig(id, "getModelNotifier").databaseConfigMap()
                     .get(getAssociatedDatabaseClassFile());
             if (config == null || config.modelNotifier() == null) {
-                modelNotifier = new ContentResolverNotifier(FlowManager.DEFAULT_AUTHORITY);
+                modelNotifier = new ContentResolverNotifier(FlowManager.DEFAULT_AUTHORITY, id);
             } else {
                 modelNotifier = config.modelNotifier();
             }
@@ -402,7 +417,7 @@ public abstract class DatabaseDefinition {
         if (!isResetting) {
             isResetting = true;
             close();
-            FlowManager.getContext().deleteDatabase(getDatabaseFileName());
+            FlowInstanceWrapper.getContext(id, "destroy").deleteDatabase(getDatabaseFileName());
             openHelper = null;
             isResetting = false;
         }

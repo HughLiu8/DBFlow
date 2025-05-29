@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.raizlabs.android.dbflow.config.DatabaseConfig;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.SqlUtils;
 import com.raizlabs.android.dbflow.sql.language.NameAlias;
@@ -38,6 +39,7 @@ public class FlowContentObserver extends ContentObserver {
 
     private static final AtomicInteger REGISTERED_COUNT = new AtomicInteger(0);
     private static boolean forceNotify = false;
+    protected String id;
     @NonNull private final String contentAuthority;
 
     /**
@@ -97,9 +99,10 @@ public class FlowContentObserver extends ContentObserver {
     protected boolean isInTransaction = false;
     private boolean notifyAllUris = false;
 
-    public FlowContentObserver(@NonNull String contentAuthority) {
+    public FlowContentObserver(@NonNull String contentAuthority, String id) {
         super(null);
         this.contentAuthority = contentAuthority;
+        this.id = id;
     }
 
     public FlowContentObserver(@Nullable Handler handler, @NonNull String contentAuthority) {
@@ -217,10 +220,10 @@ public class FlowContentObserver extends ContentObserver {
     public void registerForContentChanges(@NonNull ContentResolver contentResolver,
                                           @NonNull Class<?> table) {
         contentResolver.registerContentObserver(
-                SqlUtils.getNotificationUri(contentAuthority, table, null), true, this);
+                SqlUtils.getNotificationUri(contentAuthority, table, null, id), true, this);
         REGISTERED_COUNT.incrementAndGet();
         if (!registeredTables.containsValue(table)) {
-            registeredTables.put(FlowManager.getTableName(table), table);
+            registeredTables.put(FlowInstanceWrapper.getTableName(id, table, "registerForContentChanges"), table);
         }
     }
 
@@ -294,7 +297,7 @@ public class FlowContentObserver extends ContentObserver {
             // convert this uri to a CHANGE op if we don't care about individual changes.
             if (!notifyAllUris) {
                 action = Action.CHANGE;
-                uri = SqlUtils.getNotificationUri(contentAuthority, table, action);
+                uri = SqlUtils.getNotificationUri(contentAuthority, table, action, id);
             }
             synchronized (notificationUris) {
                 // add and keep track of unique notification uris for when transaction completes.
@@ -302,7 +305,7 @@ public class FlowContentObserver extends ContentObserver {
             }
 
             synchronized (tableUris) {
-                tableUris.add(SqlUtils.getNotificationUri(contentAuthority, table, action));
+                tableUris.add(SqlUtils.getNotificationUri(contentAuthority, table, action, id));
             }
         }
     }

@@ -4,7 +4,9 @@ import android.content.ContentValues;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
 import com.raizlabs.android.dbflow.annotation.ConflictAction;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.Query;
 import com.raizlabs.android.dbflow.sql.QueryBuilder;
@@ -51,6 +53,10 @@ public class Insert<TModel> extends BaseQueriable<TModel> implements Query {
         super(table);
     }
 
+    public Insert(@NonNull Class<TModel> table, String id) {
+        super(table, id);
+    }
+
     /**
      * The optional columns to specify. If specified, the values length must correspond to these columns, and
      * each column has a 1-1 relationship to the values.
@@ -60,7 +66,7 @@ public class Insert<TModel> extends BaseQueriable<TModel> implements Query {
     @NonNull
     public Insert<TModel> columns(@NonNull String... columns) {
         this.columns = new IProperty[columns.length];
-        ModelAdapter<TModel> modelClassModelAdapter = FlowManager.getModelAdapter(getTable());
+        ModelAdapter<TModel> modelClassModelAdapter = FlowInstanceWrapper.getModelAdapter(id, getTable(), "columns");
         for (int i = 0; i < columns.length; i++) {
             String column = columns[i];
             this.columns[i] = modelClassModelAdapter.getProperty(column);
@@ -87,7 +93,7 @@ public class Insert<TModel> extends BaseQueriable<TModel> implements Query {
      */
     @NonNull
     public Insert<TModel> asColumns() {
-        columns(FlowManager.getModelAdapter(getTable()).getAllColumnProperties());
+        columns(FlowInstanceWrapper.getModelAdapter(id, getTable(), "asColumns").getAllColumnProperties());
         return this;
     }
 

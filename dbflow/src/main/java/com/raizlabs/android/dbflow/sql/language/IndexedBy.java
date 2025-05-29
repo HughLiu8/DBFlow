@@ -22,8 +22,8 @@ public class IndexedBy<TModel> extends BaseTransformable<TModel> {
      * @param indexProperty The index property generated.
      * @param whereBase     The base piece of this query
      */
-    public IndexedBy(IndexProperty<TModel> indexProperty, WhereBase<TModel> whereBase) {
-        super(whereBase.getTable());
+    public IndexedBy(IndexProperty<TModel> indexProperty, WhereBase<TModel> whereBase, String id) {
+        super(whereBase.getTable(), id);
         this.indexProperty = indexProperty;
         this.whereBase = whereBase;
     }

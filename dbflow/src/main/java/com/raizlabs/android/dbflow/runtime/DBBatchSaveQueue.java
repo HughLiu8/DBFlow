@@ -4,9 +4,10 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowLog;
-import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.structure.Model;
 import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 import com.raizlabs.android.dbflow.structure.database.transaction.ProcessModelTransaction;
@@ -56,6 +57,7 @@ public class DBBatchSaveQueue extends Thread {
     private Runnable emptyTransactionListener;
 
     private DatabaseDefinition databaseDefinition;
+    private final String id;
 
     /**
      * Creates a new instance of this class to batch save DB object classes.
@@ -63,6 +65,7 @@ public class DBBatchSaveQueue extends Thread {
     DBBatchSaveQueue(DatabaseDefinition databaseDefinition) {
         super("DBBatchSaveQueue");
         this.databaseDefinition = databaseDefinition;
+        this.id = databaseDefinition.getId();
         models = new ArrayList<>();
     }
 
@@ -237,11 +240,11 @@ public class DBBatchSaveQueue extends Thread {
         @Override
         public void processModel(Object model, DatabaseWrapper wrapper) {
             if (model instanceof Model) {
-                ((Model) model).save();
+                ((Model) model).save(id);
             } else if (model != null) {
                 Class modelClass = model.getClass();
                 //noinspection unchecked
-                FlowManager.getModelAdapter(modelClass).save(model);
+                FlowInstanceWrapper.getModelAdapter(id, modelClass, "processModel").save(model);
             }
         }
     };

@@ -1,6 +1,7 @@
 package com.raizlabs.android.dbflow.structure.database;
 
 import android.database.sqlite.SQLiteStatement;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**

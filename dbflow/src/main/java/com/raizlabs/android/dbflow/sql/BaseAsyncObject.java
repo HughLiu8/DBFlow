@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
-import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.structure.database.transaction.ITransaction;
 import com.raizlabs.android.dbflow.structure.database.transaction.Transaction;
 
@@ -19,10 +19,12 @@ public class BaseAsyncObject<TAsync> {
 
     private final Class<?> table;
     private final DatabaseDefinition databaseDefinition;
+    protected final String id;
 
-    public BaseAsyncObject(@NonNull Class<?> table) {
+    public BaseAsyncObject(@NonNull Class<?> table, String id) {
         this.table = table;
-        databaseDefinition = FlowManager.getDatabaseForTable(table);
+        this.id = id;
+        databaseDefinition = FlowInstanceWrapper.getDatabaseForTable(id, table, "BaseAsyncObject");
     }
 
     @NonNull

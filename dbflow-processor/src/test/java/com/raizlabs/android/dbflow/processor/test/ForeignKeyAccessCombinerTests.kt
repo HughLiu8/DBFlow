@@ -119,7 +119,7 @@ class ForeignKeyAccessCombinerTest {
         assertEquals("int index_testmodel_id_ParentModel_Table = cursor.getColumnIndex(\"testmodel_id\");" +
                 "\nint index_testmodel_type_ParentModel_Table = cursor.getColumnIndex(\"testmodel_type\");" +
                 "\nif (index_testmodel_id_ParentModel_Table != -1 && !cursor.isNull(index_testmodel_id_ParentModel_Table) && index_testmodel_type_ParentModel_Table != -1 && !cursor.isNull(index_testmodel_type_ParentModel_Table)) {" +
-                "\n  model.testModel1 = com.raizlabs.android.dbflow.sql.language.SQLite.select().from(com.raizlabs.android.dbflow.test.container.ParentModel.class).where()" +
+                "\n  model.testModel1 = com.raizlabs.android.dbflow.sql.language.SQLite.select().from(com.raizlabs.android.dbflow.test.container.ParentModel.class, databaseId).where()" +
                 "\n      .and(com.raizlabs.android.dbflow.test.container.ParentModel_Table.name.eq(cursor.getString(index_testmodel_id_ParentModel_Table)))" +
                 "\n      .and(com.raizlabs.android.dbflow.test.container.ParentModel_Table.type.eq(cursor.getString(index_testmodel_type_ParentModel_Table)))" +
                 "\n      .querySingle();" +

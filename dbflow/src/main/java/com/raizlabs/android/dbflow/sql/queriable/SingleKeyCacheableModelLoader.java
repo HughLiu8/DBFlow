@@ -12,8 +12,8 @@ import com.raizlabs.android.dbflow.structure.database.FlowCursor;
  */
 public class SingleKeyCacheableModelLoader<TModel> extends CacheableModelLoader<TModel> {
 
-    public SingleKeyCacheableModelLoader(@NonNull Class<TModel> modelClass) {
-        super(modelClass);
+    public SingleKeyCacheableModelLoader(@NonNull Class<TModel> modelClass, String id) {
+        super(modelClass, id);
     }
 
     /**

@@ -46,6 +46,26 @@ class DatabaseHolderDefinition(private val processorManager: ProcessorManager) :
                     .forEach { statement("new \$T(this)", it) }
             this
         }
+
+        constructor(param(String::class, "id")) {
+            modifiers(public)
+
+            processorManager.getTypeConverters().forEach { tc ->
+                statement("\$L.put(\$T.class, new \$T())",
+                    DatabaseHandler.TYPE_CONVERTER_MAP_FIELD_NAME, tc.modelTypeName, tc.className)
+
+                tc.allowedSubTypes?.forEach { subType ->
+                    statement("\$L.put(\$T.class, new \$T())",
+                        DatabaseHandler.TYPE_CONVERTER_MAP_FIELD_NAME, subType, tc.className)
+                }
+            }
+
+            processorManager.getDatabaseHolderDefinitionList()
+                .mapNotNull { it.databaseDefinition?.outputClassName }
+                .sortedBy { it.simpleName() }
+                .forEach { statement("new \$T(this, id)", it) }
+            this
+        }
     }
 
     /**

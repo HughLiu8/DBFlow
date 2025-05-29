@@ -5,8 +5,9 @@ import android.database.sqlite.SQLiteDatabase;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
-import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.structure.InstanceAdapter;
 import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 import com.raizlabs.android.dbflow.structure.database.FlowCursor;
@@ -20,9 +21,11 @@ public abstract class ModelLoader<TModel, TReturn> {
     private final Class<TModel> modelClass;
     private DatabaseDefinition databaseDefinition;
     private InstanceAdapter<TModel> instanceAdapter;
+    private final String id;
 
-    public ModelLoader(@NonNull Class<TModel> modelClass) {
+    public ModelLoader(@NonNull Class<TModel> modelClass, @NonNull String id) {
         this.modelClass = modelClass;
+        this.id = id;
     }
 
     /**
@@ -85,7 +88,7 @@ public abstract class ModelLoader<TModel, TReturn> {
     @NonNull
     public InstanceAdapter<TModel> getInstanceAdapter() {
         if (instanceAdapter == null) {
-            instanceAdapter = FlowManager.getInstanceAdapter(modelClass);
+            instanceAdapter = FlowInstanceWrapper.getInstanceAdapter(id, modelClass, "getInstanceAdapter");
         }
         return instanceAdapter;
     }
@@ -93,7 +96,7 @@ public abstract class ModelLoader<TModel, TReturn> {
     @NonNull
     public DatabaseDefinition getDatabaseDefinition() {
         if (databaseDefinition == null) {
-            databaseDefinition = FlowManager.getDatabaseForTable(modelClass);
+            databaseDefinition = FlowInstanceWrapper.getDatabaseForTable(id, modelClass, "getDatabaseDefinition");
         }
         return databaseDefinition;
     }

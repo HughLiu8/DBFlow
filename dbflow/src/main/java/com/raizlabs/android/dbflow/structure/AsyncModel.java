@@ -3,7 +3,7 @@ package com.raizlabs.android.dbflow.structure;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.sql.BaseAsyncObject;
 import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 import com.raizlabs.android.dbflow.structure.database.transaction.DefaultTransactionQueue;
@@ -33,8 +33,8 @@ public class AsyncModel<TModel> extends BaseAsyncObject<AsyncModel<TModel>> impl
 
     private ModelAdapter<TModel> modelAdapter;
 
-    public AsyncModel(@NonNull TModel referenceModel) {
-        super(referenceModel.getClass());
+    public AsyncModel(@NonNull TModel referenceModel, String id) {
+        super(referenceModel.getClass(), id);
         model = referenceModel;
     }
 
@@ -51,14 +51,14 @@ public class AsyncModel<TModel> extends BaseAsyncObject<AsyncModel<TModel>> impl
     private ModelAdapter<TModel> getModelAdapter() {
         if (modelAdapter == null) {
             //noinspection unchecked
-            modelAdapter = (ModelAdapter<TModel>) FlowManager.getModelAdapter(model.getClass());
+            modelAdapter = (ModelAdapter<TModel>) FlowInstanceWrapper.getModelAdapter(id, model.getClass(), "AsyncModel_getModelAdapter");
         }
         return modelAdapter;
     }
 
     @Override
     public boolean save(@NonNull DatabaseWrapper wrapper) {
-        return save();
+        return save(id);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class AsyncModel<TModel> extends BaseAsyncObject<AsyncModel<TModel>> impl
 
     @Override
     public boolean update(@NonNull DatabaseWrapper wrapper) {
-        return update();
+        return update(id);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class AsyncModel<TModel> extends BaseAsyncObject<AsyncModel<TModel>> impl
 
     @Override
     public long insert(DatabaseWrapper wrapper) {
-        return insert();
+        return insert(id);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class AsyncModel<TModel> extends BaseAsyncObject<AsyncModel<TModel>> impl
     }
 
     @Override
-    public void load(@NonNull DatabaseWrapper wrapper) {
+    public void load(@NonNull DatabaseWrapper wrapper, @NonNull final String id) {
         load();
     }
 
@@ -141,13 +141,18 @@ public class AsyncModel<TModel> extends BaseAsyncObject<AsyncModel<TModel>> impl
     }
 
     @Override
-    public boolean exists(@NonNull DatabaseWrapper wrapper) {
-        return exists();
+    public boolean exists(@NonNull DatabaseWrapper wrapper, @NonNull final String id) {
+        return exists(id);
     }
 
     @Override
     public boolean exists() {
-        return getModelAdapter().exists(model);
+        return getModelAdapter().existsWithId(model, id);
+    }
+
+    @Override
+    public boolean exists(@NonNull final String id) {
+        return getModelAdapter().existsWithId(model, id);
     }
 
     /**
@@ -155,7 +160,7 @@ public class AsyncModel<TModel> extends BaseAsyncObject<AsyncModel<TModel>> impl
      */
     @NonNull
     @Override
-    public AsyncModel<? extends Model> async() {
+    public AsyncModel<? extends Model> async(String id) {
         //noinspection unchecked
         return (AsyncModel<? extends Model>) this;
     }

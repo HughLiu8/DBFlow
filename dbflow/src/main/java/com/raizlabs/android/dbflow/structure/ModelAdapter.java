@@ -10,6 +10,7 @@ import com.raizlabs.android.dbflow.annotation.ForeignKey;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.sql.language.property.IProperty;
 import com.raizlabs.android.dbflow.sql.language.property.Property;
 import com.raizlabs.android.dbflow.sql.saveable.ListModelSaver;
@@ -22,8 +23,6 @@ import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 import com.raizlabs.android.dbflow.structure.database.FlowCursor;
 
 import java.util.Collection;
-
-import static com.raizlabs.android.dbflow.config.FlowManager.getWritableDatabaseForTable;
 
 /**
  * Description: Used for generated classes from the combination of {@link Table} and {@link Model}.
@@ -56,7 +55,7 @@ public abstract class ModelAdapter<TModel> extends InstanceAdapter<TModel>
     @NonNull
     public DatabaseStatement getInsertStatement() {
         if (insertStatement == null) {
-            insertStatement = getInsertStatement(getWritableDatabaseForTable(getModelClass()));
+            insertStatement = getInsertStatement(FlowInstanceWrapper.getWritableDatabaseForTable(databaseId, getModelClass(), "getInsertStatement"));
         }
 
         return insertStatement;
@@ -68,7 +67,7 @@ public abstract class ModelAdapter<TModel> extends InstanceAdapter<TModel>
     @NonNull
     public DatabaseStatement getUpdateStatement() {
         if (updateStatement == null) {
-            updateStatement = getUpdateStatement(getWritableDatabaseForTable(getModelClass()));
+            updateStatement = getUpdateStatement(FlowInstanceWrapper.getWritableDatabaseForTable(databaseId, getModelClass(), "getUpdateStatement"));
         }
 
         return updateStatement;
@@ -80,7 +79,7 @@ public abstract class ModelAdapter<TModel> extends InstanceAdapter<TModel>
     @NonNull
     public DatabaseStatement getDeleteStatement() {
         if (deleteStatement == null) {
-            deleteStatement = getDeleteStatement(getWritableDatabaseForTable(getModelClass()));
+            deleteStatement = getDeleteStatement(FlowInstanceWrapper.getWritableDatabaseForTable(databaseId, getModelClass(), "getDeleteStatement"));
         }
 
         return deleteStatement;
@@ -146,7 +145,7 @@ public abstract class ModelAdapter<TModel> extends InstanceAdapter<TModel>
     @NonNull
     public DatabaseStatement getCompiledStatement() {
         if (compiledStatement == null) {
-            compiledStatement = getCompiledStatement(getWritableDatabaseForTable(getModelClass()));
+            compiledStatement = getCompiledStatement(FlowInstanceWrapper.getWritableDatabaseForTable(databaseId, getModelClass(), "getCompiledStatement"));
         }
 
         return compiledStatement;

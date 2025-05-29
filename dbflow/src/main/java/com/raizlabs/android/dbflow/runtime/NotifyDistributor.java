@@ -1,7 +1,10 @@
 package com.raizlabs.android.dbflow.runtime;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import com.raizlabs.android.dbflow.structure.ModelAdapter;
@@ -30,7 +33,8 @@ public class NotifyDistributor implements ModelNotifier {
     public <TModel> void notifyModelChanged(@NonNull TModel model,
                                             @NonNull ModelAdapter<TModel> adapter,
                                             @NonNull BaseModel.Action action) {
-        FlowManager.getModelNotifierForTable(adapter.getModelClass())
+        final String id = adapter.getDatabaseId();
+        FlowInstanceWrapper.getModelNotifierForTable(id, adapter.getModelClass(), "notifyModelChanged")
             .notifyModelChanged(model, adapter, action);
     }
 
@@ -39,7 +43,8 @@ public class NotifyDistributor implements ModelNotifier {
      */
     @Override
     public <TModel> void notifyTableChanged(@NonNull Class<TModel> table,
-                                            @NonNull BaseModel.Action action) {
-        FlowManager.getModelNotifierForTable(table).notifyTableChanged(table, action);
+                                            @NonNull BaseModel.Action action,
+                                            @NonNull String id) {
+        FlowInstanceWrapper.getModelNotifierForTable(id, table, "notifyTableChanged").notifyTableChanged(table, action, id);
     }
 }

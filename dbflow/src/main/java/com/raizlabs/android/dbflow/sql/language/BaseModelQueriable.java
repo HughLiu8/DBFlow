@@ -3,8 +3,9 @@ package com.raizlabs.android.dbflow.sql.language;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowLog;
-import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.list.FlowCursorList;
 import com.raizlabs.android.dbflow.list.FlowQueryList;
 import com.raizlabs.android.dbflow.runtime.NotifyDistributor;
@@ -40,9 +41,13 @@ public abstract class BaseModelQueriable<TModel> extends BaseQueriable<TModel>
         super(table);
     }
 
+    protected BaseModelQueriable(Class<TModel> table, @NonNull String id) {
+        super(table, id);
+    }
+
     private InstanceAdapter<TModel> getRetrievalAdapter() {
         if (retrievalAdapter == null) {
-            retrievalAdapter = FlowManager.getInstanceAdapter(getTable());
+            retrievalAdapter = FlowInstanceWrapper.getInstanceAdapter(id, getTable(), "getRetrievalAdapter");
         }
         return retrievalAdapter;
     }
@@ -50,7 +55,7 @@ public abstract class BaseModelQueriable<TModel> extends BaseQueriable<TModel>
     @NonNull
     @Override
     public CursorResult<TModel> queryResults() {
-        return new CursorResult<>(getRetrievalAdapter().getModelClass(), query());
+        return new CursorResult<>(getRetrievalAdapter().getModelClass(), query(), id);
     }
 
     @NonNull
@@ -89,6 +94,7 @@ public abstract class BaseModelQueriable<TModel> extends BaseQueriable<TModel>
     public FlowCursorList<TModel> cursorList() {
         return new FlowCursorList.Builder<>(getTable())
                 .cacheModels(cachingEnabled)
+                .id(id)
                 .modelQueriable(this).build();
     }
 
@@ -98,12 +104,13 @@ public abstract class BaseModelQueriable<TModel> extends BaseQueriable<TModel>
         return new FlowQueryList.Builder<>(getTable())
                 .cacheModels(cachingEnabled)
                 .modelQueriable(this)
+                .id(id)
                 .build();
     }
 
     @Override
     public long executeUpdateDelete() {
-        return executeUpdateDelete(FlowManager.getWritableDatabaseForTable(getTable()));
+        return executeUpdateDelete(FlowInstanceWrapper.getWritableDatabaseForTable(id, getTable(), "executeUpdateDelete"));
     }
 
     @Override
@@ -115,7 +122,7 @@ public abstract class BaseModelQueriable<TModel> extends BaseQueriable<TModel>
 
             // only notify for affected.
             if (affected > 0) {
-                NotifyDistributor.get().notifyTableChanged(getTable(), getPrimaryAction());
+                NotifyDistributor.get().notifyTableChanged(getTable(), getPrimaryAction(), id);
             }
         } finally {
             statement.close();
@@ -126,7 +133,7 @@ public abstract class BaseModelQueriable<TModel> extends BaseQueriable<TModel>
     @NonNull
     @Override
     public AsyncQuery<TModel> async() {
-        return new AsyncQuery<>(this);
+        return new AsyncQuery<>(this, id);
     }
 
     @NonNull
@@ -134,7 +141,7 @@ public abstract class BaseModelQueriable<TModel> extends BaseQueriable<TModel>
     public <QueryClass> List<QueryClass> queryCustomList(@NonNull Class<QueryClass> queryModelClass) {
         String query = getQuery();
         FlowLog.log(FlowLog.Level.V, "Executing query: " + query);
-        QueryModelAdapter<QueryClass> adapter = FlowManager.getQueryModelAdapter(queryModelClass);
+        QueryModelAdapter<QueryClass> adapter = FlowInstanceWrapper.getQueryModelAdapter(id, queryModelClass, "queryCustomList");
         return cachingEnabled
                 ? adapter.getListModelLoader().load(query)
                 : adapter.getNonCacheableListModelLoader().load(query);
@@ -145,7 +152,7 @@ public abstract class BaseModelQueriable<TModel> extends BaseQueriable<TModel>
     public <QueryClass> QueryClass queryCustomSingle(@NonNull Class<QueryClass> queryModelClass) {
         String query = getQuery();
         FlowLog.log(FlowLog.Level.V, "Executing query: " + query);
-        QueryModelAdapter<QueryClass> adapter = FlowManager.getQueryModelAdapter(queryModelClass);
+        QueryModelAdapter<QueryClass> adapter = FlowInstanceWrapper.getQueryModelAdapter(id, queryModelClass, "queryCustomSingle");
         return cachingEnabled
                 ? adapter.getSingleModelLoader().load(query)
                 : adapter.getNonCacheableSingleModelLoader().load(query);

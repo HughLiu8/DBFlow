@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.raizlabs.android.dbflow.StringUtils;
-import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.runtime.NotifyDistributor;
 import com.raizlabs.android.dbflow.sql.language.NameAlias;
 import com.raizlabs.android.dbflow.sql.language.Operator;
@@ -31,15 +31,12 @@ public class SqlUtils {
 
     private static final char[] hexArray = "0123456789ABCDEF".toCharArray();
 
-    /**
-     * Notifies the {@link ContentObserver} that the model has changed.
-     */
-    @Deprecated
     public static void notifyModelChanged(@NonNull String contentAuthority,
                                           Class<?> table, Action action,
-                                          Iterable<SQLOperator> sqlOperators) {
-        FlowManager.getContext().getContentResolver().notifyChange(
-                getNotificationUri(contentAuthority, table, action, sqlOperators), null, true);
+                                          Iterable<SQLOperator> sqlOperators,
+                                          String id) {
+        FlowInstanceWrapper.getContext(id, "notifyModelChanged").getContentResolver().notifyChange(
+                getNotificationUri(contentAuthority, table, action, sqlOperators, id), null, true);
     }
 
     /**
@@ -62,8 +59,9 @@ public class SqlUtils {
      */
     @Deprecated
     public static <TModel> void notifyTableChanged(@NonNull Class<TModel> table,
-                                                   @NonNull Action action) {
-        NotifyDistributor.get().notifyTableChanged(table, action);
+                                                   @NonNull Action action,
+                                                   @NonNull String id) {
+        NotifyDistributor.get().notifyTableChanged(table, action, id);
     }
 
     /**
@@ -77,10 +75,11 @@ public class SqlUtils {
     public static Uri getNotificationUri(@NonNull String contentAuthority,
                                          @NonNull Class<?> modelClass,
                                          @Nullable Action action,
-                                         @Nullable Iterable<SQLOperator> conditions) {
+                                         @Nullable Iterable<SQLOperator> conditions,
+                                         @Nullable String id) {
         Uri.Builder uriBuilder = new Uri.Builder().scheme("dbflow")
                 .authority(contentAuthority)
-                .appendQueryParameter(TABLE_QUERY_PARAM, FlowManager.getTableName(modelClass));
+                .appendQueryParameter(TABLE_QUERY_PARAM, FlowInstanceWrapper.getTableName(id, modelClass, "getNotificationUri"));
         if (action != null) {
             uriBuilder.fragment(action.name());
         }
@@ -104,10 +103,11 @@ public class SqlUtils {
     public static Uri getNotificationUri(@NonNull String contentAuthority,
                                          @NonNull Class<?> modelClass,
                                          @NonNull Action action,
-                                         @Nullable SQLOperator[] conditions) {
+                                         @Nullable SQLOperator[] conditions,
+                                         @Nullable String id) {
         Uri.Builder uriBuilder = new Uri.Builder().scheme("dbflow")
                 .authority(contentAuthority)
-                .appendQueryParameter(TABLE_QUERY_PARAM, FlowManager.getTableName(modelClass));
+                .appendQueryParameter(TABLE_QUERY_PARAM, FlowInstanceWrapper.getTableName(id, modelClass, "getNotificationUri"));
         if (action != null) {
             uriBuilder.fragment(action.name());
         }
@@ -135,12 +135,13 @@ public class SqlUtils {
                                          @NonNull Class<?> modelClass,
                                          @NonNull Action action,
                                          @NonNull String notifyKey,
-                                         @Nullable Object notifyValue) {
+                                         @Nullable Object notifyValue,
+                                         @Nullable String id) {
         Operator operator = null;
         if (StringUtils.isNotNullOrEmpty(notifyKey)) {
             operator = Operator.op(new NameAlias.Builder(notifyKey).build()).value(notifyValue);
         }
-        return getNotificationUri(contentAuthority, modelClass, action, new SQLOperator[]{operator});
+        return getNotificationUri(contentAuthority, modelClass, action, new SQLOperator[]{operator}, id);
     }
 
     /**
@@ -150,8 +151,9 @@ public class SqlUtils {
      */
     public static Uri getNotificationUri(@NonNull String contentAuthority,
                                          @NonNull Class<?> modelClass,
-                                         @NonNull Action action) {
-        return getNotificationUri(contentAuthority, modelClass, action, "", null);
+                                         @NonNull Action action,
+                                         @Nullable String id) {
+        return getNotificationUri(contentAuthority, modelClass, action, "", null, id);
     }
 
 
@@ -161,10 +163,10 @@ public class SqlUtils {
      * @param onTable     The table that this trigger runs on
      * @param triggerName The name of the trigger
      */
-    public static void dropTrigger(Class<?> onTable, String triggerName) {
+    public static void dropTrigger(Class<?> onTable, String triggerName, String id) {
         QueryBuilder queryBuilder = new QueryBuilder("DROP TRIGGER IF EXISTS ")
             .append(triggerName);
-        FlowManager.getDatabaseForTable(onTable).getWritableDatabase().execSQL(queryBuilder.getQuery());
+        FlowInstanceWrapper.getDatabaseForTable(id, onTable, "dropTrigger").getWritableDatabase().execSQL(queryBuilder.getQuery());
     }
 
     /**
@@ -198,8 +200,8 @@ public class SqlUtils {
      * @param onTable   The table that this trigger runs on
      * @param indexName The name of the index.
      */
-    public static void dropIndex(Class<?> onTable, String indexName) {
-        dropIndex(FlowManager.getDatabaseForTable(onTable).getWritableDatabase(), indexName);
+    public static void dropIndex(Class<?> onTable, String indexName, String id) {
+        dropIndex(FlowInstanceWrapper.getDatabaseForTable(id, onTable, "dropIndex").getWritableDatabase(), indexName);
     }
 
     /**

@@ -13,7 +13,7 @@ public interface ModelNotifier {
     <T> void notifyModelChanged(@NonNull T model, @NonNull ModelAdapter<T> adapter,
                                 @NonNull BaseModel.Action action);
 
-    <T> void notifyTableChanged(@NonNull Class<T> table, @NonNull BaseModel.Action action);
+    <T> void notifyTableChanged(@NonNull Class<T> table, @NonNull BaseModel.Action action, @NonNull String id);
 
     TableNotifierRegister newRegister();
 }

@@ -17,7 +17,7 @@ public class BaseQueryModel extends NoModificationModel {
     }
 
     @Override
-    public boolean exists(@NonNull DatabaseWrapper databaseWrapper) {
+    public boolean exists(@NonNull DatabaseWrapper databaseWrapper, @NonNull final String id) {
         return exists();
     }
 

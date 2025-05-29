@@ -10,8 +10,8 @@ import com.raizlabs.android.dbflow.structure.database.FlowCursor;
  */
 public class SingleModelLoader<TModel> extends ModelLoader<TModel, TModel> {
 
-    public SingleModelLoader(Class<TModel> modelClass) {
-        super(modelClass);
+    public SingleModelLoader(Class<TModel> modelClass, String id) {
+        super(modelClass, id);
     }
 
     @SuppressWarnings("unchecked")

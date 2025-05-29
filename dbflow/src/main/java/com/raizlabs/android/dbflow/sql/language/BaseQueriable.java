@@ -5,6 +5,8 @@ import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
 import androidx.annotation.NonNull;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowLog;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.runtime.NotifyDistributor;
@@ -23,9 +25,19 @@ public abstract class BaseQueriable<TModel> implements Queriable, Actionable {
 
 
     private final Class<TModel> table;
+    protected String id;
 
     protected BaseQueriable(Class<TModel> table) {
         this.table = table;
+    }
+    protected BaseQueriable(Class<TModel> table, @NonNull String id) {
+        DbFlowDependencyHelper.checkIdWithWarning(id, "BaseQueriable_BaseQueriable");
+        this.table = table;
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
     }
 
     /**
@@ -60,7 +72,7 @@ public abstract class BaseQueriable<TModel> implements Queriable, Actionable {
 
     @Override
     public long longValue() {
-        return longValue(FlowManager.getWritableDatabaseForTable(table));
+        return longValue(FlowInstanceWrapper.getWritableDatabaseForTable(id, table, "longValue"));
     }
 
     @Override
@@ -88,7 +100,7 @@ public abstract class BaseQueriable<TModel> implements Queriable, Actionable {
 
     @Override
     public FlowCursor query() {
-        query(FlowManager.getWritableDatabaseForTable(table));
+        query(FlowInstanceWrapper.getWritableDatabaseForTable(id, table, "query"));
         return null;
     }
 
@@ -109,7 +121,7 @@ public abstract class BaseQueriable<TModel> implements Queriable, Actionable {
 
     @Override
     public long executeInsert() {
-        return executeInsert(FlowManager.getWritableDatabaseForTable(table));
+        return executeInsert(FlowInstanceWrapper.getWritableDatabaseForTable(id, table, "executeInsert"));
     }
 
     @Override
@@ -130,8 +142,13 @@ public abstract class BaseQueriable<TModel> implements Queriable, Actionable {
         if (cursor != null) {
             cursor.close();
         } else {
+            if (id == null
+                    && DbFlowDependencyHelper.getDependency() != null
+                    && DbFlowDependencyHelper.getDependency().isMultipleDatabaseEnabled()) {
+                throw new IllegalArgumentException("id can't be null in BaseQueriable_execute");
+            }
             // we dont query, we're executing something here.
-            NotifyDistributor.get().notifyTableChanged(getTable(), getPrimaryAction());
+            NotifyDistributor.get().notifyTableChanged(getTable(), getPrimaryAction(), id);
         }
     }
 
@@ -141,15 +158,20 @@ public abstract class BaseQueriable<TModel> implements Queriable, Actionable {
         if (cursor != null) {
             cursor.close();
         } else {
+            if (id == null
+                    && DbFlowDependencyHelper.getDependency() != null
+                    && DbFlowDependencyHelper.getDependency().isMultipleDatabaseEnabled()) {
+                throw new IllegalArgumentException("id can't be null in BaseQueriable_execute2");
+            }
             // we dont query, we're executing something here.
-            NotifyDistributor.get().notifyTableChanged(getTable(), getPrimaryAction());
+            NotifyDistributor.get().notifyTableChanged(getTable(), getPrimaryAction(), id);
         }
     }
 
     @NonNull
     @Override
     public DatabaseStatement compileStatement() {
-        return compileStatement(FlowManager.getWritableDatabaseForTable(table));
+        return compileStatement(FlowInstanceWrapper.getWritableDatabaseForTable(id, table, "compileStatement"));
     }
 
     @NonNull
