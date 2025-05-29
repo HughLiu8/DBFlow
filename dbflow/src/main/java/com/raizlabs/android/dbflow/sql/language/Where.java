@@ -4,6 +4,7 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 
 import com.raizlabs.android.dbflow.annotation.provider.ContentProvider;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.QueryBuilder;
 import com.raizlabs.android.dbflow.sql.language.property.IProperty;
@@ -54,6 +55,15 @@ public class Where<TModel> extends BaseModelQueriable<TModel> implements ModelQu
      */
     public Where(@NonNull WhereBase<TModel> whereBase, SQLOperator... conditions) {
         super(whereBase.getTable());
+        this.whereBase = whereBase;
+        operatorGroup = OperatorGroup.nonGroupingClause();
+        havingGroup = OperatorGroup.nonGroupingClause();
+
+        operatorGroup.andAll(conditions);
+    }
+
+    public Where(String id, @NonNull WhereBase<TModel> whereBase, SQLOperator... conditions) {
+        super(whereBase.getTable(), id);
         this.whereBase = whereBase;
         operatorGroup = OperatorGroup.nonGroupingClause();
         havingGroup = OperatorGroup.nonGroupingClause();
@@ -221,7 +231,7 @@ public class Where<TModel> extends BaseModelQueriable<TModel> implements ModelQu
 
     @Override
     public FlowCursor query() {
-        return query(FlowManager.getDatabaseForTable(getTable()).getWritableDatabase());
+        return query(FlowInstanceWrapper.getDatabaseForTable(id, getTable(), "Where_query").getWritableDatabase());
     }
 
     /**

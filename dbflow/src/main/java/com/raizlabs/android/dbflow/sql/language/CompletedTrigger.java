@@ -3,6 +3,7 @@ package com.raizlabs.android.dbflow.sql.language;
 import androidx.annotation.NonNull;
 
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.Query;
 import com.raizlabs.android.dbflow.sql.QueryBuilder;
@@ -53,15 +54,15 @@ public class CompletedTrigger<TModel> implements Query {
     /**
      * Turns on this trigger
      */
-    public void enable() {
-        DatabaseDefinition databaseDefinition = FlowManager.getDatabaseForTable(triggerMethod.onTable);
+    public void enable(String id) {
+        DatabaseDefinition databaseDefinition = FlowInstanceWrapper.getDatabaseForTable(id, triggerMethod.onTable, "CompletedTrigger_enable");
         databaseDefinition.getWritableDatabase().execSQL(getQuery());
     }
 
     /**
      * Disables this trigger
      */
-    public void disable() {
-        SqlUtils.dropTrigger(triggerMethod.onTable, triggerMethod.trigger.triggerName);
+    public void disable(String id) {
+        SqlUtils.dropTrigger(triggerMethod.onTable, triggerMethod.trigger.triggerName, id);
     }
 }

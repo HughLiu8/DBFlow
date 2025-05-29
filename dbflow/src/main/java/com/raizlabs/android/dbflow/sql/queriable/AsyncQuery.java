@@ -23,8 +23,8 @@ public class AsyncQuery<TModel> extends BaseAsyncObject<AsyncQuery<TModel>> {
      *
      * @param queriable The queriable object to use to query data.
      */
-    public AsyncQuery(@NonNull ModelQueriable<TModel> queriable) {
-        super(queriable.getTable());
+    public AsyncQuery(@NonNull ModelQueriable<TModel> queriable, String id) {
+        super(queriable.getTable(), id);
         this.modelQueriable = queriable;
     }
 

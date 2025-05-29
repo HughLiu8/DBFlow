@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowLog;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.structure.database.transaction.DefaultTransactionQueue;
@@ -111,7 +112,8 @@ public class DatabaseHelperDelegate extends BaseDatabaseHelper {
      * @param prepackagedName The name of the prepackaged db file
      */
     public void movePrepackagedDB(String databaseName, String prepackagedName) {
-        final File dbPath = FlowManager.getContext().getDatabasePath(databaseName);
+        final Context context = FlowInstanceWrapper.getContext(getDatabaseDefinition().getId(), "movePrepackagedDB");
+        final File dbPath = context.getDatabasePath(databaseName);
 
         // If the database already exists, and is ok return
         if (dbPath.exists() && (!getDatabaseDefinition().areConsistencyChecksEnabled() ||
@@ -126,14 +128,14 @@ public class DatabaseHelperDelegate extends BaseDatabaseHelper {
         // Try to copy database file
         try {
             // check existing and use that as backup
-            File existingDb = FlowManager.getContext().getDatabasePath(getTempDbFileName());
+            File existingDb = context.getDatabasePath(getTempDbFileName());
             InputStream inputStream;
             // if it exists and the integrity is ok we use backup as the main DB is no longer valid
             if (existingDb.exists() && (!getDatabaseDefinition().backupEnabled() || getDatabaseDefinition().backupEnabled()
                 && backupHelper != null && isDatabaseIntegrityOk(backupHelper.getDatabase()))) {
                 inputStream = new FileInputStream(existingDb);
             } else {
-                inputStream = FlowManager.getContext().getAssets().open(prepackagedName);
+                inputStream = context.getAssets().open(prepackagedName);
             }
             writeDB(dbPath, inputStream);
 
@@ -193,8 +195,9 @@ public class DatabaseHelperDelegate extends BaseDatabaseHelper {
     public boolean restoreBackUp() {
         boolean success = true;
 
-        File db = FlowManager.getContext().getDatabasePath(TEMP_DB_NAME + getDatabaseDefinition().getDatabaseName());
-        File corrupt = FlowManager.getContext().getDatabasePath(getDatabaseDefinition().getDatabaseName());
+        final Context context = FlowInstanceWrapper.getContext(getDatabaseDefinition().getId(), "restoreBackUp");
+        File db = context.getDatabasePath(TEMP_DB_NAME + getDatabaseDefinition().getDatabaseName());
+        File corrupt = context.getDatabasePath(getDatabaseDefinition().getDatabaseName());
         if (corrupt.delete()) {
             try {
                 writeDB(corrupt, new FileInputStream(db));
@@ -238,7 +241,8 @@ public class DatabaseHelperDelegate extends BaseDatabaseHelper {
      * @param prepackagedName The name of the prepackaged db file
      */
     public void restoreDatabase(String databaseName, String prepackagedName) {
-        final File dbPath = FlowManager.getContext().getDatabasePath(databaseName);
+        final Context context = FlowInstanceWrapper.getContext(getDatabaseDefinition().getId(), "restoreDatabase");
+        final File dbPath = context.getDatabasePath(databaseName);
 
         // If the database already exists, return
         if (dbPath.exists()) {
@@ -251,14 +255,14 @@ public class DatabaseHelperDelegate extends BaseDatabaseHelper {
         // Try to copy database file
         try {
             // check existing and use that as backup
-            File existingDb = FlowManager.getContext().getDatabasePath(getDatabaseDefinition().getDatabaseFileName());
+            File existingDb = context.getDatabasePath(getDatabaseDefinition().getDatabaseFileName());
             InputStream inputStream;
             // if it exists and the integrity is ok
             if (existingDb.exists() && (getDatabaseDefinition().backupEnabled()
                 && backupHelper != null && isDatabaseIntegrityOk(backupHelper.getDatabase()))) {
                 inputStream = new FileInputStream(existingDb);
             } else {
-                inputStream = FlowManager.getContext().getAssets().open(prepackagedName);
+                inputStream = context.getAssets().open(prepackagedName);
             }
             writeDB(dbPath, inputStream);
         } catch (IOException e) {
@@ -281,7 +285,7 @@ public class DatabaseHelperDelegate extends BaseDatabaseHelper {
             @SuppressWarnings("ResultOfMethodCallIgnored")
             @Override
             public void execute(DatabaseWrapper databaseWrapper) {
-                Context context = FlowManager.getContext();
+                final Context context = FlowInstanceWrapper.getContext(getDatabaseDefinition().getId(), "backupDB");
                 File backup = context.getDatabasePath(getTempDbFileName());
                 File temp = context.getDatabasePath(TEMP_DB_NAME + "-2-" + getDatabaseDefinition().getDatabaseFileName());
 

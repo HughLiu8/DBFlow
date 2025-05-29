@@ -3,6 +3,7 @@ package com.raizlabs.android.dbflow.sql.language;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.Query;
 import com.raizlabs.android.dbflow.sql.QueryBuilder;
@@ -40,7 +41,7 @@ public class From<TModel> extends BaseTransformable<TModel> {
 
     private NameAlias getTableAlias() {
         if (tableAlias == null) {
-            tableAlias = new NameAlias.Builder(FlowManager.getTableName(getTable())).build();
+            tableAlias = new NameAlias.Builder(FlowInstanceWrapper.getTableName(id, getTable(), "getTableAlias")).build();
         }
         return tableAlias;
     }
@@ -53,6 +54,11 @@ public class From<TModel> extends BaseTransformable<TModel> {
      */
     public From(@NonNull Query querybase, @NonNull Class<TModel> table) {
         super(table);
+        queryBase = querybase;
+    }
+
+    public From(String id, @NonNull Query querybase, @NonNull Class<TModel> table) {
+        super(table, id);
         queryBase = querybase;
     }
 
@@ -191,7 +197,7 @@ public class From<TModel> extends BaseTransformable<TModel> {
      */
     @NonNull
     public IndexedBy<TModel> indexedBy(IndexProperty<TModel> indexProperty) {
-        return new IndexedBy<>(indexProperty, this);
+        return new IndexedBy<>(indexProperty, this, id);
     }
 
     @NonNull

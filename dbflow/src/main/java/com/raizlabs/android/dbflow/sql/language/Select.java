@@ -60,6 +60,10 @@ public class Select implements Query {
         return new From<>(this, table);
     }
 
+    @NonNull
+    public <TModel> From<TModel> from(@NonNull Class<TModel> table, String id) {
+        return new From<>(id,this, table);
+    }
     /**
      * appends {@link #DISTINCT} to the query
      *

@@ -106,7 +106,7 @@ class ExistenceAccessCombiner(combiner: Combiner,
                     add("return ")
                 }
 
-                add("\$T.selectCountOf()\n.from(\$T.class)\n" +
+                add("\$T.selectCountOf()\n.from(\$T.class, databaseId)\n" +
                         ".where(getPrimaryConditionClause(\$L))\n" +
                         ".hasData(wrapper)",
                         ClassNames.SQLITE, tableClassName, modelBlock)
@@ -328,8 +328,8 @@ class SaveModelAccessCombiner(combiner: Combiner,
                 if (implementsModel) {
                     statement("$access.save(${wrapperIfBaseModel(extendsBaseModel)})")
                 } else {
-                    statement("\$T.getModelAdapter(\$T.class).save($access, ${ModelUtils.wrapper})",
-                            ClassNames.FLOW_MANAGER, fieldTypeName)
+                    statement("\$T.getModelAdapter(databaseId, \$T.class, \"SaveModelAccessCombiner\").save($access, ${ModelUtils.wrapper})",
+                            ClassNames.FLOW_INSTANCE_WRAPPER, fieldTypeName)
                 }
             }.end()
         }
@@ -349,8 +349,8 @@ class DeleteModelAccessCombiner(combiner: Combiner,
                 if (implementsModel) {
                     statement("$access.delete(${wrapperIfBaseModel(extendsBaseModel)})")
                 } else {
-                    statement("\$T.getModelAdapter(\$T.class).delete($access, ${ModelUtils.wrapper})",
-                            ClassNames.FLOW_MANAGER, fieldTypeName)
+                    statement("\$T.getModelAdapter(databaseId, \$T.class, \"DeleteModelAccessCombiner\").delete($access, ${ModelUtils.wrapper})",
+                            ClassNames.FLOW_INSTANCE_WRAPPER, fieldTypeName)
                 }
             }.end()
         }

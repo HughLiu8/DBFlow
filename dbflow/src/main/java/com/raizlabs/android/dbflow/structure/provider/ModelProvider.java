@@ -21,7 +21,7 @@ public interface ModelProvider {
      * @param orderBy            The order by without the ORDER BY
      * @param columns            The list of columns to select. Leave blank for *
      */
-    void load(@NonNull OperatorGroup whereOperatorGroup,
+    void load(String id, @NonNull OperatorGroup whereOperatorGroup,
               @Nullable String orderBy, String... columns);
 
     /**

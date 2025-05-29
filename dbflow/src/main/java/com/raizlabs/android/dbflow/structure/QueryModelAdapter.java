@@ -24,7 +24,7 @@ public abstract class QueryModelAdapter<TQueryModel> extends
     }
 
     @Override
-    public boolean exists(@NonNull TQueryModel model) {
+    public boolean existsWithId(@NonNull TQueryModel model, String id) {
         throw new UnsupportedOperationException("QueryModels cannot check for existence");
     }
 

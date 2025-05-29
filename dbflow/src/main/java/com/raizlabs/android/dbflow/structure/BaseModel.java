@@ -3,6 +3,7 @@ package com.raizlabs.android.dbflow.structure;
 import androidx.annotation.NonNull;
 
 import com.raizlabs.android.dbflow.annotation.ColumnIgnore;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 
@@ -53,8 +54,13 @@ public class BaseModel implements Model {
     }
 
     @Override
-    public void load(@NonNull DatabaseWrapper wrapper) {
-        getModelAdapter().load(this, wrapper);
+    public void load(String id) {
+        getModelAdapter(id).load(this);
+    }
+
+    @Override
+    public void load(@NonNull DatabaseWrapper wrapper, @NonNull final String id) {
+        getModelAdapter(id).load(this, wrapper);
     }
 
     @Override
@@ -62,6 +68,10 @@ public class BaseModel implements Model {
         return getModelAdapter().save(this);
     }
 
+    @Override
+    public boolean save(String id) {
+        return getModelAdapter(id).save(this);
+    }
 
     @Override
     public boolean save(@NonNull DatabaseWrapper databaseWrapper) {
@@ -71,6 +81,11 @@ public class BaseModel implements Model {
     @Override
     public boolean delete() {
         return getModelAdapter().delete(this);
+    }
+
+    @Override
+    public boolean delete(String id) {
+        return getModelAdapter(id).delete(this);
     }
 
     @Override
@@ -84,6 +99,11 @@ public class BaseModel implements Model {
     }
 
     @Override
+    public boolean update(String id) {
+        return getModelAdapter(id).update(this);
+    }
+
+    @Override
     public boolean update(@NonNull DatabaseWrapper databaseWrapper) {
         return getModelAdapter().update(this, databaseWrapper);
     }
@@ -94,24 +114,34 @@ public class BaseModel implements Model {
     }
 
     @Override
+    public long insert(String id) {
+        return getModelAdapter(id).insert(this);
+    }
+
+    @Override
     public long insert(DatabaseWrapper databaseWrapper) {
         return getModelAdapter().insert(this, databaseWrapper);
     }
 
     @Override
     public boolean exists() {
-        return getModelAdapter().exists(this);
+        return getModelAdapter().existsWithId(this, null);
     }
 
     @Override
-    public boolean exists(@NonNull DatabaseWrapper databaseWrapper) {
-        return getModelAdapter().exists(this, databaseWrapper);
+    public boolean exists(String id) {
+        return getModelAdapter(id).existsWithId(this, id);
+    }
+
+    @Override
+    public boolean exists(@NonNull DatabaseWrapper databaseWrapper, @NonNull final String id) {
+        return getModelAdapter(id).exists(this, databaseWrapper);
     }
 
     @NonNull
     @Override
-    public AsyncModel<? extends Model> async() {
-        return new AsyncModel<>(this);
+    public AsyncModel<? extends Model> async(String id) {
+        return new AsyncModel<>(this, id);
     }
 
     /**
@@ -122,6 +152,13 @@ public class BaseModel implements Model {
     public ModelAdapter getModelAdapter() {
         if (modelAdapter == null) {
             modelAdapter = FlowManager.getModelAdapter(getClass());
+        }
+        return modelAdapter;
+    }
+
+    public ModelAdapter getModelAdapter(String id) {
+        if (modelAdapter == null) {
+            modelAdapter = FlowInstanceWrapper.getModelAdapter(id, getClass(), "BaseModel_getModelAdapter");
         }
         return modelAdapter;
     }

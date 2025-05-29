@@ -28,6 +28,7 @@ object ClassNames {
 
     val DATABASE_HOLDER = ClassName.get(CONFIG, "DatabaseHolder")
     val FLOW_MANAGER = ClassName.get(CONFIG, "FlowManager")
+    val FLOW_INSTANCE_WRAPPER = ClassName.get(CONFIG, "FlowInstanceWrapper")
     val BASE_DATABASE_DEFINITION_CLASSNAME = ClassName.get(CONFIG, "DatabaseDefinition")
 
     val URI = ClassName.get("android.net", "Uri")

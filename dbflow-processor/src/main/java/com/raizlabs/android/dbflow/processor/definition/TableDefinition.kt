@@ -321,7 +321,7 @@ class TableDefinition(manager: ProcessorManager, element: TypeElement) : BaseTab
                         if (it.isNullableType) {
                             manager.logWarning("Attempting to use nullable field type on an autoincrementing column. " +
                                     "To suppress or remove this warning " +
-                                    "switch to java primitive, add @android.support.annotation.NonNull," +
+                                    "switch to java primitive, add @androidx.annotation.NonNull," +
                                     "@org.jetbrains.annotation.NotNull, or in Kotlin don't make it nullable. Check the column ${it.columnName} " +
                                     "on $tableName")
                         }
@@ -513,7 +513,7 @@ class TableDefinition(manager: ProcessorManager, element: TypeElement) : BaseTab
 
                 `override fun`(ClassNames.SINGLE_MODEL_LOADER, "createSingleModelLoader") {
                     modifiers(public, final)
-                    addStatement("return new \$T<>(getModelClass())",
+                    addStatement("return new \$T<>(getModelClass(), databaseId)",
                             if (singlePrimaryKey)
                                 ClassNames.SINGLE_KEY_CACHEABLE_MODEL_LOADER
                             else
@@ -521,7 +521,7 @@ class TableDefinition(manager: ProcessorManager, element: TypeElement) : BaseTab
                 }
                 `override fun`(ClassNames.LIST_MODEL_LOADER, "createListModelLoader") {
                     modifiers(public, final)
-                    `return`("new \$T<>(getModelClass())",
+                    `return`("new \$T<>(getModelClass(), databaseId)",
                             if (singlePrimaryKey)
                                 ClassNames.SINGLE_KEY_CACHEABLE_LIST_MODEL_LOADER
                             else

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.language.OperatorGroup;
 import com.raizlabs.android.dbflow.structure.BaseModel;
@@ -21,28 +22,28 @@ public abstract class BaseProviderModel
     extends BaseModel implements ModelProvider {
 
     @Override
-    public boolean delete() {
-        return ContentUtils.delete(getDeleteUri(), this) > 0;
+    public boolean delete(String id) {
+        return ContentUtils.delete(getDeleteUri(), this, id) > 0;
     }
 
     @Override
-    public boolean save() {
-        int count = ContentUtils.update(getUpdateUri(), this);
+    public boolean save(String id) {
+        int count = ContentUtils.update(getUpdateUri(), this, id);
         if (count == 0) {
-            return ContentUtils.insert(getInsertUri(), this) != null;
+            return ContentUtils.insert(getInsertUri(), this, id) != null;
         } else {
             return count > 0;
         }
     }
 
     @Override
-    public boolean update() {
-        return ContentUtils.update(getUpdateUri(), this) > 0;
+    public boolean update(String id) {
+        return ContentUtils.update(getUpdateUri(), this, id) > 0;
     }
 
     @Override
-    public long insert() {
-        ContentUtils.insert(getInsertUri(), this);
+    public long insert(String id) {
+        ContentUtils.insert(getInsertUri(), this, id);
         return 0;
     }
 
@@ -53,9 +54,9 @@ public abstract class BaseProviderModel
      */
     @Override
     @SuppressWarnings("unchecked")
-    public boolean exists() {
-        Cursor cursor = ContentUtils.query(FlowManager.getContext().getContentResolver(),
-            getQueryUri(), getModelAdapter().getPrimaryConditionClause(this), "");
+    public boolean exists(String id) {
+        Cursor cursor = ContentUtils.query(FlowInstanceWrapper.getContext(id, "BaseProviderModel_exists").getContentResolver(),
+            getQueryUri(), getModelAdapter(id).getPrimaryConditionClause(this), "");
         boolean exists = (cursor != null && cursor.getCount() > 0);
         if (cursor != null) {
             cursor.close();
@@ -65,20 +66,20 @@ public abstract class BaseProviderModel
 
     @Override
     @SuppressWarnings("unchecked")
-    public void load(@NonNull OperatorGroup whereConditions,
+    public void load(String id, @NonNull OperatorGroup whereConditions,
                      @Nullable String orderBy, String... columns) {
-        FlowCursor cursor = FlowCursor.from(ContentUtils.query(FlowManager.getContext().getContentResolver(),
+        FlowCursor cursor = FlowCursor.from(ContentUtils.query(FlowInstanceWrapper.getContext(id, "BaseProviderModel_load").getContentResolver(),
             getQueryUri(), whereConditions, orderBy, columns));
         if (cursor != null && cursor.moveToFirst()) {
-            getModelAdapter().loadFromCursor(cursor, this);
+            getModelAdapter(id).loadFromCursor(cursor, this);
             cursor.close();
         }
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void load() {
-        load(getModelAdapter().getPrimaryConditionClause(this), "");
+    public void load(String id) {
+        load(id, getModelAdapter().getPrimaryConditionClause(this), "");
     }
 
 }

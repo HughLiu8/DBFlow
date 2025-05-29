@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.raizlabs.android.dbflow.annotation.provider.ContentProvider;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowLog;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.language.Operator;
@@ -61,8 +62,8 @@ public class ContentUtils {
      * @param model     The model to insert.
      * @return A Uri of the inserted data.
      */
-    public static <TableClass> Uri insert(Uri insertUri, TableClass model) {
-        return insert(FlowManager.getContext().getContentResolver(), insertUri, model);
+    public static <TableClass> Uri insert(Uri insertUri, TableClass model, String id) {
+        return insert(FlowInstanceWrapper.getContext(id, "ContentUtils_insert").getContentResolver(), insertUri, model, id);
     }
 
     /**
@@ -75,8 +76,8 @@ public class ContentUtils {
      * @return The Uri of the inserted data.
      */
     @SuppressWarnings("unchecked")
-    public static <TableClass> Uri insert(ContentResolver contentResolver, Uri insertUri, TableClass model) {
-        ModelAdapter<TableClass> adapter = (ModelAdapter<TableClass>) FlowManager.getModelAdapter(model.getClass());
+    public static <TableClass> Uri insert(ContentResolver contentResolver, Uri insertUri, TableClass model, String id) {
+        ModelAdapter<TableClass> adapter = (ModelAdapter<TableClass>) FlowInstanceWrapper.getModelAdapter(id, model.getClass(), "ContentUtils_insert2");
 
         ContentValues contentValues = new ContentValues();
         adapter.bindToInsertValues(contentValues, model);
@@ -98,9 +99,10 @@ public class ContentUtils {
      * @return The count of the rows affected by the insert.
      */
     public static <TableClass> int bulkInsert(ContentResolver contentResolver, Uri bulkInsertUri,
-                                              Class<TableClass> table, List<TableClass> models) {
+                                              Class<TableClass> table, List<TableClass> models,
+                                              String id) {
         ContentValues[] contentValues = new ContentValues[models == null ? 0 : models.size()];
-        ModelAdapter<TableClass> adapter = FlowManager.getModelAdapter(table);
+        ModelAdapter<TableClass> adapter = FlowInstanceWrapper.getModelAdapter(id, table, "bulkInsert");
 
         if (models != null) {
             for (int i = 0; i < contentValues.length; i++) {
@@ -122,8 +124,8 @@ public class ContentUtils {
      * @param models        The models to insert.
      * @return The count of the rows affected by the insert.
      */
-    public static <TableClass> int bulkInsert(Uri bulkInsertUri, Class<TableClass> table, List<TableClass> models) {
-        return bulkInsert(FlowManager.getContext().getContentResolver(), bulkInsertUri, table, models);
+    public static <TableClass> int bulkInsert(Uri bulkInsertUri, Class<TableClass> table, List<TableClass> models, String id) {
+        return bulkInsert(FlowInstanceWrapper.getContext(id, "bulkInsert").getContentResolver(), bulkInsertUri, table, models, id);
     }
 
     /**
@@ -134,8 +136,8 @@ public class ContentUtils {
      * @param model     A model to update
      * @return The number of rows updated.
      */
-    public static <TableClass> int update(Uri updateUri, TableClass model) {
-        return update(FlowManager.getContext().getContentResolver(), updateUri, model);
+    public static <TableClass> int update(Uri updateUri, TableClass model, String id) {
+        return update(FlowInstanceWrapper.getContext(id, "").getContentResolver(), updateUri, model, id);
     }
 
     /**
@@ -148,8 +150,8 @@ public class ContentUtils {
      * @return The number of rows updated.
      */
     @SuppressWarnings("unchecked")
-    public static <TableClass> int update(ContentResolver contentResolver, Uri updateUri, TableClass model) {
-        ModelAdapter<TableClass> adapter = (ModelAdapter<TableClass>) FlowManager.getModelAdapter(model.getClass());
+    public static <TableClass> int update(ContentResolver contentResolver, Uri updateUri, TableClass model, String id) {
+        ModelAdapter<TableClass> adapter = (ModelAdapter<TableClass>) FlowInstanceWrapper.getModelAdapter(id, model.getClass(), "ContentUtils_update");
 
         ContentValues contentValues = new ContentValues();
         adapter.bindToContentValues(contentValues, model);
@@ -169,8 +171,8 @@ public class ContentUtils {
      * @return The number of rows deleted.
      */
     @SuppressWarnings("unchecked")
-    public static <TableClass> int delete(Uri deleteUri, TableClass model) {
-        return delete(FlowManager.getContext().getContentResolver(), deleteUri, model);
+    public static <TableClass> int delete(Uri deleteUri, TableClass model, String id) {
+        return delete(FlowInstanceWrapper.getContext(id, "ContentUtils_delete").getContentResolver(), deleteUri, model, id);
     }
 
     /**
@@ -183,8 +185,8 @@ public class ContentUtils {
      * @return The number of rows deleted.
      */
     @SuppressWarnings("unchecked")
-    public static <TableClass> int delete(ContentResolver contentResolver, Uri deleteUri, TableClass model) {
-        ModelAdapter<TableClass> adapter = (ModelAdapter<TableClass>) FlowManager.getModelAdapter(model.getClass());
+    public static <TableClass> int delete(ContentResolver contentResolver, Uri deleteUri, TableClass model, String id) {
+        ModelAdapter<TableClass> adapter = (ModelAdapter<TableClass>) FlowInstanceWrapper.getModelAdapter(id, model.getClass(), "ContentUtils_delete2");
 
         int count = contentResolver.delete(deleteUri, adapter.getPrimaryConditionClause(model).getQuery(), null);
 
@@ -226,9 +228,10 @@ public class ContentUtils {
      * @return A list of {@link TableClass}
      */
     public static <TableClass> List<TableClass> queryList(Uri queryUri, Class<TableClass> table,
+                                                          String id,
                                                           OperatorGroup whereConditions,
                                                           String orderBy, String... columns) {
-        return queryList(FlowManager.getContext().getContentResolver(), queryUri, table, whereConditions, orderBy, columns);
+        return queryList(FlowInstanceWrapper.getContext(id, "ContentUtils_queryList").getContentResolver(), queryUri, id, table, whereConditions, orderBy, columns);
     }
 
 
@@ -245,12 +248,13 @@ public class ContentUtils {
      * @return A list of {@link TableClass}
      */
     public static <TableClass> List<TableClass> queryList(ContentResolver contentResolver, Uri queryUri,
+                                                          String id,
                                                           Class<TableClass> table,
                                                           OperatorGroup whereConditions,
                                                           String orderBy, String... columns) {
         FlowCursor cursor = FlowCursor.from(contentResolver.query(queryUri, columns, whereConditions.getQuery(), null, orderBy));
         if (cursor != null) {
-            return FlowManager.getModelAdapter(table)
+            return FlowInstanceWrapper.getModelAdapter(id, table, "ContentUtils_queryList")
                 .getListModelLoader()
                 .load(cursor);
         }
@@ -268,10 +272,10 @@ public class ContentUtils {
      * @param columns         The list of columns to query.
      * @return The first {@link TableClass} of the list query from the content provider.
      */
-    public static <TableClass> TableClass querySingle(Uri queryUri, Class<TableClass> table,
+    public static <TableClass> TableClass querySingle(Uri queryUri, String id, Class<TableClass> table,
                                                       OperatorGroup whereConditions,
                                                       String orderBy, String... columns) {
-        return querySingle(FlowManager.getContext().getContentResolver(), queryUri, table, whereConditions, orderBy, columns);
+        return querySingle(FlowInstanceWrapper.getContext(id, "ContentUtils_querySingle").getContentResolver(), queryUri, table, id, whereConditions, orderBy, columns);
     }
 
     /**
@@ -287,9 +291,10 @@ public class ContentUtils {
      * @return The first {@link TableClass} of the list query from the content provider.
      */
     public static <TableClass> TableClass querySingle(ContentResolver contentResolver, Uri queryUri, Class<TableClass> table,
+                                                      String id,
                                                       OperatorGroup whereConditions,
                                                       String orderBy, String... columns) {
-        List<TableClass> list = queryList(contentResolver, queryUri, table, whereConditions, orderBy, columns);
+        List<TableClass> list = queryList(contentResolver, queryUri, id, table, whereConditions, orderBy, columns);
         return list.size() > 0 ? list.get(0) : null;
     }
 

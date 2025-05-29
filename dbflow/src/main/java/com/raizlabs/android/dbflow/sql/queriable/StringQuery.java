@@ -3,7 +3,7 @@ package com.raizlabs.android.dbflow.sql.queriable;
 import android.database.sqlite.SQLiteDatabase;
 import androidx.annotation.NonNull;
 
-import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.sql.Query;
 import com.raizlabs.android.dbflow.sql.language.BaseModelQueriable;
 import com.raizlabs.android.dbflow.sql.language.Delete;
@@ -31,8 +31,8 @@ public class StringQuery<TModel> extends BaseModelQueriable<TModel> implements Q
      * @param sql   The sql statement to query the DB with. Does not work with {@link Delete},
      *              this must be done with {@link SQLiteDatabase#execSQL(String)}
      */
-    public StringQuery(@NonNull Class<TModel> table, @NonNull String sql) {
-        super(table);
+    public StringQuery(@NonNull Class<TModel> table, @NonNull String sql, @NonNull String id) {
+        super(table, id);
         query = sql;
     }
 
@@ -43,7 +43,7 @@ public class StringQuery<TModel> extends BaseModelQueriable<TModel> implements Q
 
     @Override
     public FlowCursor query() {
-        return query(FlowManager.getDatabaseForTable(getTable()).getWritableDatabase());
+        return query(FlowInstanceWrapper.getDatabaseForTable(id, getTable(), "query").getWritableDatabase());
     }
 
     @Override

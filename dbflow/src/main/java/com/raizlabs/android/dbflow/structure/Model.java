@@ -19,6 +19,10 @@ public interface Model extends ReadOnlyModel {
      */
     boolean save();
 
+    default boolean save(String id) {
+        throw new IllegalArgumentException("The default function Model::save shouldn't be called");
+    }
+
     /**
      * Saves the object in the DB.
      *
@@ -33,6 +37,10 @@ public interface Model extends ReadOnlyModel {
      */
     boolean delete();
 
+    default boolean delete(String id) {
+        throw new IllegalArgumentException("The default function Model::delete shouldn't be called");
+    }
+
     /**
      * Deletes the object in the DB
      *
@@ -46,6 +54,9 @@ public interface Model extends ReadOnlyModel {
      * @return true if successful
      */
     boolean update();
+    default boolean update(String id) {
+        throw new IllegalArgumentException("The default function Model::update shouldn't be called");
+    }
 
     /**
      * Updates an object in the DB. Does not insert on failure.
@@ -60,6 +71,9 @@ public interface Model extends ReadOnlyModel {
      * @return the count of the rows affected, should only be 1 here, or -1 if failed.
      */
     long insert();
+    default long insert(String id) {
+        throw new IllegalArgumentException("The default function Model::insert shouldn't be called");
+    }
 
     /**
      * Inserts the object into the DB
@@ -72,6 +86,6 @@ public interface Model extends ReadOnlyModel {
      * @return An async instance of this model where all transactions are on the {@link DefaultTransactionQueue}
      */
     @NonNull
-    AsyncModel<? extends Model> async();
+    AsyncModel<? extends Model> async(String id);
 
 }

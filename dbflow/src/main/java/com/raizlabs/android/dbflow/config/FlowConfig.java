@@ -22,6 +22,7 @@ public final class FlowConfig {
     private final Set<Class<? extends DatabaseHolder>> databaseHolders;
     private final Map<Class<?>, DatabaseConfig> databaseConfigMap;
     private final Context context;
+    private final String id;
     private final boolean openDatabasesOnInit;
 
     FlowConfig(Builder builder) {
@@ -29,6 +30,7 @@ public final class FlowConfig {
         databaseConfigMap = builder.databaseConfigMap;
         context = builder.context;
         openDatabasesOnInit = builder.openDatabasesOnInit;
+        id = builder.id;
     }
 
     @NonNull
@@ -47,6 +49,11 @@ public final class FlowConfig {
     }
 
     @NonNull
+    public String getId() {
+        return id;
+    }
+
+    @NonNull
     public Context getContext() {
         return context;
     }
@@ -58,6 +65,7 @@ public final class FlowConfig {
     public static class Builder {
 
         final Context context;
+        String id;
         Set<Class<? extends DatabaseHolder>> databaseHolders = new HashSet<>();
         final Map<Class<?>, DatabaseConfig> databaseConfigMap = new HashMap<>();
         boolean openDatabasesOnInit;
@@ -75,6 +83,12 @@ public final class FlowConfig {
         @NonNull
         public Builder addDatabaseConfig(@NonNull DatabaseConfig databaseConfig) {
             databaseConfigMap.put(databaseConfig.databaseClass(), databaseConfig);
+            return this;
+        }
+
+        @NonNull
+        public Builder setId(@NonNull String id) {
+            this.id = id;
             return this;
         }
 

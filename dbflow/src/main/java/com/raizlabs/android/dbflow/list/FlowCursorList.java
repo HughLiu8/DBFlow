@@ -5,8 +5,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.widget.ListView;
 
+import com.raizlabs.android.dbflow.DbFlowDependencyHelper;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowLog;
-import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.sql.queriable.ModelQueriable;
 import com.raizlabs.android.dbflow.structure.InstanceAdapter;
@@ -54,6 +55,7 @@ public class FlowCursorList<TModel> implements
     private Class<TModel> table;
     private ModelCache<TModel, ?> modelCache;
     private boolean cacheModels;
+    private String id;
 
     @Nullable
     private ModelQueriable<TModel> modelQueriable;
@@ -83,7 +85,8 @@ public class FlowCursorList<TModel> implements
                 modelCache = ModelLruCache.newInstance(0);
             }
         }
-        instanceAdapter = FlowManager.getInstanceAdapter(builder.modelClass);
+        id = builder.id;
+        instanceAdapter = FlowInstanceWrapper.getInstanceAdapter(id, builder.modelClass, "FlowCursorList");
 
         setCacheModels(cacheModels);
     }
@@ -214,7 +217,7 @@ public class FlowCursorList<TModel> implements
         warnEmptyCursor();
         if (!cacheModels) {
             return cursor == null ? new ArrayList<TModel>() :
-                FlowManager.getModelAdapter(table).getListModelLoader().convertToData(cursor, null);
+                FlowInstanceWrapper.getModelAdapter(id, table, "getAll").getListModelLoader().convertToData(cursor, null);
         } else {
             List<TModel> list = new ArrayList<>();
             for (TModel model : this) {
@@ -314,6 +317,7 @@ public class FlowCursorList<TModel> implements
         private ModelQueriable<TModel> modelQueriable;
         private boolean cacheModels = true;
         private ModelCache<TModel, ?> modelCache;
+        private String id;
 
         public Builder(@NonNull Class<TModel> modelClass) {
             this.modelClass = modelClass;
@@ -335,6 +339,12 @@ public class FlowCursorList<TModel> implements
         @NonNull
         public Builder<TModel> modelQueriable(@Nullable ModelQueriable<TModel> modelQueriable) {
             this.modelQueriable = modelQueriable;
+            return this;
+        }
+
+        @NonNull
+        public Builder<TModel> id(@Nullable String id) {
+            this.id = id;
             return this;
         }
 

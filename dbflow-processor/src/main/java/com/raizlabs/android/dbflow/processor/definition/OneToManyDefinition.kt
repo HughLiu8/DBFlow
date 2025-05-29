@@ -142,8 +142,8 @@ class OneToManyDefinition(executableElement: ExecutableElement,
     private val methodName = "${ModelUtils.variable}.$_methodName(${wrapperIfBaseModel(hasWrapper)})"
 
     fun writeWrapperStatement(method: MethodSpec.Builder) {
-        method.statement("\$T ${ModelUtils.wrapper} = \$T.getWritableDatabaseForTable(\$T.class)",
-            ClassNames.DATABASE_WRAPPER, ClassNames.FLOW_MANAGER, referencedTableType)
+        method.statement("\$T ${ModelUtils.wrapper} = \$T.getWritableDatabaseForTable(databaseId, \$T.class, \"writeWrapperStatement\")",
+            ClassNames.DATABASE_WRAPPER, ClassNames.FLOW_INSTANCE_WRAPPER, referencedTableType)
     }
 
     /**
@@ -183,9 +183,9 @@ class OneToManyDefinition(executableElement: ExecutableElement,
             `if`("$oneToManyMethodName != null") {
                 // need to load adapter for non-model classes
                 if (!extendsModel || efficientCodeMethods) {
-                    statement("\$T adapter = \$T.getModelAdapter(\$T.class)",
+                    statement("\$T adapter = \$T.getModelAdapter(databaseId, \$T.class, \"writeLoopWithMethod\")",
                         ParameterizedTypeName.get(ClassNames.MODEL_ADAPTER, referencedTableType),
-                        ClassNames.FLOW_MANAGER, referencedTableType)
+                        ClassNames.FLOW_INSTANCE_WRAPPER, referencedTableType)
                 }
 
                 if (efficientCodeMethods) {

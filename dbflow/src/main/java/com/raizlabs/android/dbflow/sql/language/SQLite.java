@@ -1,6 +1,7 @@
 package com.raizlabs.android.dbflow.sql.language;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.raizlabs.android.dbflow.sql.language.property.IProperty;
 import com.raizlabs.android.dbflow.sql.language.property.Property;
@@ -52,6 +53,11 @@ public class SQLite {
         return new Insert<>(table);
     }
 
+    @NonNull
+    public static <TModel> Insert<TModel> insert(@NonNull Class<TModel> table, String id) {
+        return new Insert<>(table, id);
+    }
+
     /**
      * @return Begins a DELETE statement.
      */
@@ -68,8 +74,8 @@ public class SQLite {
      * @return A {@link From} with specified DELETE on table.
      */
     @NonNull
-    public static <TModel> From<TModel> delete(@NonNull Class<TModel> table) {
-        return delete().from(table);
+    public static <TModel> From<TModel> delete(@NonNull Class<TModel> table, String id) {
+        return delete().from(table, id);
     }
 
     /**

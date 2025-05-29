@@ -4,8 +4,8 @@ import android.database.sqlite.SQLiteException;
 import androidx.annotation.NonNull;
 
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
+import com.raizlabs.android.dbflow.config.FlowInstanceWrapper;
 import com.raizlabs.android.dbflow.config.FlowLog;
-import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.config.NaturalOrderComparator;
 import com.raizlabs.android.dbflow.sql.QueryBuilder;
 import com.raizlabs.android.dbflow.sql.migration.Migration;
@@ -125,7 +125,7 @@ public class BaseDatabaseHelper {
 
         // will try migrations file or execute migrations from code
         try {
-            final List<String> files = Arrays.asList(FlowManager.getContext().getAssets().list(
+            final List<String> files = Arrays.asList(FlowInstanceWrapper.getContext(databaseDefinition.getId(), "executeMigrations").getAssets().list(
                 MIGRATION_PATH + "/" + databaseDefinition.getDatabaseName()));
             Collections.sort(files, new NaturalOrderComparator());
 
@@ -195,7 +195,8 @@ public class BaseDatabaseHelper {
     private void executeSqlScript(@NonNull DatabaseWrapper db,
                                   @NonNull String file) {
         try {
-            final InputStream input = FlowManager.getContext().getAssets().open(MIGRATION_PATH + "/" + getDatabaseDefinition().getDatabaseName() + "/" + file);
+            final InputStream input = FlowInstanceWrapper.getContext(databaseDefinition.getId(), "executeSqlScript")
+                    .getAssets().open(MIGRATION_PATH + "/" + getDatabaseDefinition().getDatabaseName() + "/" + file);
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
             String line;
 

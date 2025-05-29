@@ -125,7 +125,7 @@ constructor(processorManager: ProcessorManager, element: Element,
             isNullableType = false
         }
 
-        // androidx annotation
+        // android support annotation
         element.annotationMirrors
                 .find { it.annotationType.toTypeElement().toClassName() == ClassNames.NON_NULL }?.let {
             isNotNullType = true

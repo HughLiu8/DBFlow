@@ -19,8 +19,8 @@ public class CacheableListModelLoader<TModel> extends ListModelLoader<TModel> {
     private ModelAdapter<TModel> modelAdapter;
     private ModelCache<TModel, ?> modelCache;
 
-    public CacheableListModelLoader(@NonNull Class<TModel> modelClass) {
-        super(modelClass);
+    public CacheableListModelLoader(@NonNull Class<TModel> modelClass, String id) {
+        super(modelClass, id);
     }
 
     @NonNull
